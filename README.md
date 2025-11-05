@@ -147,8 +147,8 @@ O sistema cria e gerencia a seguinte estrutura em um disco de armazenamento:
 
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/cleaning.git
-cd cleaning
+git clone https://github.com/montezuma-p/linux-storage-manager
+cd linux-storage-manager
 
 # Torna o script executável
 chmod +x cleaning.py
