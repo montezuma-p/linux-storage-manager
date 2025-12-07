@@ -6,7 +6,7 @@ STORAGE MANAGER - Gerenciador do /mnt/storage
 Gerencia a estrutura, configurações e estatísticas do disco de armazenamento.
 Cria automaticamente toda a estrutura necessária na primeira execução.
 
-AUTOR: Sistema de Limpeza Inteligente
+AUTOR: Pedro Montezuma
 DATA: 3 de novembro de 2025
 """
 

@@ -6,7 +6,7 @@ RESTORE MANAGER - Gerenciador de Restauração
 Gerencia restauração de arquivos do storage (archives e trash).
 Permite listar, buscar e extrair arquivos específicos sem descompactar tudo.
 
-AUTOR: Sistema de Limpeza Inteligente
+AUTOR: Pedro Montezuma
 DATA: 3 de novembro de 2025
 """
 
@@ -17,7 +17,7 @@ import tarfile
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
-from .storage_manager import StorageManager
+from modules.storage_manager import StorageManager
 
 
 class RestoreManager:
@@ -55,7 +55,7 @@ class RestoreManager:
             print(f"\n... e mais {len(operations) - limit} operações")
         
         print("=" * 60)
-        print("💡 Use: cleaning.py --restore <operation_id> --item <arquivo>")
+        print("💡 Use: main.py --restore <operation_id> --item <arquivo>")
     
     def list_trash(self, limit: int = 20):
         """Lista arquivos no lixão"""
@@ -86,7 +86,7 @@ class RestoreManager:
             print(f"\n... e mais {len(items) - limit} arquivos")
         
         print("=" * 60)
-        print("💡 Use: cleaning.py --restore-trash <filename>")
+        print("💡 Use: main.py --restore-trash <filename>")
     
     def search_in_archives(self, search_term: str):
         """Busca arquivos nos archives"""

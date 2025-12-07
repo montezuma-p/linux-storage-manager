@@ -56,10 +56,12 @@ Este é um sistema completo de gerenciamento de arquivos para ambientes de desen
 ### 🧹 Limpeza Tradicional
 
 - 📦 **Node Modules**: Detecta e remove `node_modules` antigos ou inativos (>30 dias)
+- 🐍 **Cache Python**: ⭐ NOVO! `__pycache__`, `.pytest_cache`, `.mypy_cache`, `.ruff_cache`, `.tox`, `htmlcov`, `.pyc/.pyo/.pyd`
 - 🗂️ **Arquivos Temporários**: `.tmp`, `.temp`, `.bak`, `.swp`, `~`, etc.
-- 💾 **Caches**: `.next`, `.nuxt`, `dist`, `build`, `.cache`, `__pycache__`, `.pytest_cache`
+- 💾 **Caches**: `.next`, `.nuxt`, `dist`, `build`, `.cache`
 - 📋 **Logs Antigos**: Arquivos `.log` com mais de 7 dias
-- 🗑️ **Lixeira do Sistema**: Limpa `~/.local/share/Trash`
+- 🗑️ **Lixeira do Sistema**: Limpa `~/.local/share/Trash` (apenas em --full)
+- 🔒 **Proteção Automática**: Diretórios críticos (`.config`, `.var`, `.vscode`, etc.) são **sempre protegidos**
 
 ### 🗄️ Arquivamento Inteligente
 
@@ -96,15 +98,32 @@ Move arquivos para um "lixão" no storage com:
 ```
 cleaning/
 │
-├── cleaning.py              # Script principal
+├── main.py                  # ⭐ Entry point (415 linhas)
+│                            # - Parsing de argumentos com argparse
+│                            # - Roteamento para managers (storage/archive/trash/restore)
+│                            # - Importações absolutas para melhor manutenção
 │
-└── modules/
+├── modules/
+│   ├── __init__.py          # Package initialization com absolute imports
+│   ├── cleaner.py           # ⭐ NOVO: LimpadorSistema (536 linhas)
+│   │                        # - Lógica principal de limpeza
+│   │                        # - Proteção de diretórios críticos
+│   │                        # - Modo Python-only
+│   ├── storage_manager.py   # Gerenciador do /mnt/storage
+│   ├── archive_manager.py   # Sistema de arquivamento inteligente
+│   ├── trash_manager.py     # Lixão compactado
+│   └── restore_manager.py   # Restauração de arquivos
+│
+└── utils/                   # ⭐ NOVO: Utilitários reutilizáveis
     ├── __init__.py
-    ├── storage_manager.py   # Gerencia estrutura do storage
-    ├── archive_manager.py   # Políticas de arquivamento
-    ├── trash_manager.py     # Lixão compactado
-    └── restore_manager.py   # Sistema de restauração
+    └── file_utils.py        # format_size, get_dir_size, is_old_file, is_old_or_inactive
 ```
+
+**Mudanças Arquiteturais (Dezembro 2025):**
+- ✅ Refatoração modular: `main.py` (845 linhas) → `main.py` (415 linhas) + `modules/cleaner.py` (536 linhas)
+- ✅ Package `utils/` criado para funções reutilizáveis
+- ✅ Imports relativos → absolutos em todos os módulos (melhor IDE support e clareza)
+- ✅ Redução de 52% no tamanho do arquivo principal
 
 ### 📁 Estrutura do Storage
 
@@ -151,10 +170,10 @@ git clone https://github.com/montezuma-p/linux-storage-manager
 cd linux-storage-manager
 
 # Torna o script executável
-chmod +x cleaning.py
+chmod +x main.py
 
 # (Opcional) Cria link simbólico para usar globalmente
-sudo ln -s $(pwd)/cleaning.py /usr/local/bin/cleaning
+sudo ln -s $(pwd)/main.py /usr/local/bin/cleaning
 ```
 
 ### Configuração Inicial do Storage
@@ -164,7 +183,7 @@ sudo ln -s $(pwd)/cleaning.py /usr/local/bin/cleaning
 # Por padrão usa /mnt/storage, mas pode ser configurado
 
 # Teste a inicialização
-python3 cleaning.py --storage-info
+python3 main.py --storage-info
 ```
 
 ---
@@ -178,7 +197,7 @@ python3 cleaning.py --storage-info
 Mostra o que **seria** removido sem remover nada:
 
 ```bash
-python3 cleaning.py
+python3 main.py
 ```
 
 #### 2️⃣ Preview Detalhado
@@ -186,7 +205,7 @@ python3 cleaning.py
 Mostra **todos** os arquivos (não só os 10 primeiros):
 
 ```bash
-python3 cleaning.py --details
+python3 main.py --details
 ```
 
 #### 3️⃣ Modo Interativo ⭐
@@ -194,7 +213,7 @@ python3 cleaning.py --details
 Escolhe **item por item** o que limpar:
 
 ```bash
-python3 cleaning.py --interactive
+python3 main.py --interactive
 ```
 
 Você verá algo assim:
@@ -220,20 +239,46 @@ Você verá algo assim:
 Remove **tudo** de uma vez (cuidado! ⚠️):
 
 ```bash
-python3 cleaning.py --run
+python3 main.py --run
 ```
 
 #### 5️⃣ Limpeza de Node Modules Apenas
 
 ```bash
-python3 cleaning.py --only-nodes
+python3 main.py --only-nodes --run
 ```
 
-#### 6️⃣ Limpeza Completa (inclui logs do sistema)
+#### 6️⃣ Limpeza Python-Only ⭐ NOVO
+
+Remove **apenas** cache Python (seguro para projetos ativos):
 
 ```bash
-python3 cleaning.py --run --full
+# Preview
+python3 main.py --python-only
+
+# Executar limpeza
+python3 main.py --python-only --run
+
+# Modo interativo focado em Python
+python3 main.py --python-only --interactive
 ```
+
+**Remove:**
+- `__pycache__/` (bytecode compilado)
+- `.pytest_cache/` (cache do pytest)
+- `.mypy_cache/` (cache do mypy)
+- `.ruff_cache/` (cache do Ruff linter)
+- `.tox/` (ambientes de teste)
+- `htmlcov/` (relatórios de cobertura)
+- `*.pyc`, `*.pyo`, `*.pyd` (arquivos compilados)
+
+#### 7️⃣ Limpeza Completa (inclui logs do sistema)
+
+```bash
+python3 main.py --run --full
+```
+
+**Nota:** Diretórios protegidos (`.config`, `.var`, `.vscode`, etc.) **nunca** são limpos, mesmo em modo `--full`.
 
 ---
 
@@ -242,7 +287,7 @@ python3 cleaning.py --run --full
 #### 📊 Arquivamento Interativo
 
 ```bash
-python3 cleaning.py --move --interactive
+python3 main.py --move --interactive
 ```
 
 Você escolhe quais categorias escanear:
@@ -258,16 +303,16 @@ Você escolhe quais categorias escanear:
 
 ```bash
 # Move apenas relatórios antigos
-python3 cleaning.py --move --policy reports
+python3 main.py --move --policy reports
 
 # Move apenas backups antigos
-python3 cleaning.py --move --policy backups
+python3 main.py --move --policy backups
 ```
 
 #### 🔄 Modo Sinérgico (Aplica Todas as Políticas)
 
 ```bash
-python3 cleaning.py --move --synergic
+python3 main.py --move --synergic
 ```
 
 ---
@@ -278,11 +323,11 @@ python3 cleaning.py --move --synergic
 
 ```bash
 # Sintaxe básica
-python3 cleaning.py --trash /caminho/do/diretorio --tag NOME-DA-TAG
+python3 main.py --trash /caminho/do/diretorio --tag NOME-DA-TAG
 
 # Exemplos
-python3 cleaning.py --trash ~/old-project --tag OLD-PROJECTS
-python3 cleaning.py --trash ~/logs/antigos --tag OLD-LOGS
+python3 main.py --trash ~/old-project --tag OLD-PROJECTS
+python3 main.py --trash ~/logs/antigos --tag OLD-LOGS
 ```
 
 **Tags disponíveis:**
@@ -298,7 +343,7 @@ python3 cleaning.py --trash ~/logs/antigos --tag OLD-LOGS
 #### 📋 Listar Conteúdo do Lixão
 
 ```bash
-python3 cleaning.py --list-trash
+python3 main.py --list-trash
 ```
 
 Saída:
@@ -315,7 +360,7 @@ Saída:
 #### 🔍 Buscar no Lixão
 
 ```bash
-python3 cleaning.py --search-trash "report_20241020"
+python3 main.py --search-trash "report_20241020"
 ```
 
 ---
@@ -325,41 +370,41 @@ python3 cleaning.py --search-trash "report_20241020"
 #### 📦 Listar Archives Disponíveis
 
 ```bash
-python3 cleaning.py --list-archives
+python3 main.py --list-archives
 ```
 
 #### 🔄 Restaurar Archive Completo
 
 ```bash
-python3 cleaning.py --restore moving-20241103-143022
+python3 main.py --restore moving-20241103-143022
 ```
 
 #### 📄 Restaurar Arquivo Específico do Archive
 
 ```bash
-python3 cleaning.py --restore moving-20241103-143022 --item report.html
+python3 main.py --restore moving-20241103-143022 --item report.html
 ```
 
 #### 🗑️ Restaurar do Lixão
 
 ```bash
 # Restaura tudo
-python3 cleaning.py --restore-trash "[OLD-REPORTS]_file.tar.gz"
+python3 main.py --restore-trash "[OLD-REPORTS]_file.tar.gz"
 
 # Restaura item específico
-python3 cleaning.py --restore-trash "[OLD-REPORTS]_file.tar.gz" --item report.html
+python3 main.py --restore-trash "[OLD-REPORTS]_file.tar.gz" --item report.html
 ```
 
 #### 🔍 Buscar nos Archives
 
 ```bash
-python3 cleaning.py --search "relatorio" --in-archives
+python3 main.py --search "relatorio" --in-archives
 ```
 
 #### 🎯 Especificar Destino de Restauração
 
 ```bash
-python3 cleaning.py --restore moving-20241103 --to /home/user/restored/
+python3 main.py --restore moving-20241103 --to /home/user/restored/
 ```
 
 ---
@@ -369,7 +414,7 @@ python3 cleaning.py --restore moving-20241103 --to /home/user/restored/
 ### 📊 Visualizar Informações do Storage
 
 ```bash
-python3 cleaning.py --storage-info
+python3 main.py --storage-info
 ```
 
 Mostra:
@@ -416,47 +461,47 @@ self.default_policies = {
 
 ```bash
 # 1. Preview do que será limpo
-python3 cleaning.py --details
+python3 main.py --details
 
 # 2. Limpa interativamente (você escolhe)
-python3 cleaning.py --interactive
+python3 main.py --interactive
 
 # 3. Arquiva relatórios e backups antigos
-python3 cleaning.py --move --synergic
+python3 main.py --move --synergic
 
 # 4. Verifica o storage
-python3 cleaning.py --storage-info
+python3 main.py --storage-info
 ```
 
 ### 🚀 Limpeza de Emergência (Disco Cheio!)
 
 ```bash
 # Remove node_modules imediatamente
-python3 cleaning.py --run --only-nodes
+python3 main.py --run --only-nodes
 
 # Depois faz limpeza completa
-python3 cleaning.py --run --full
+python3 main.py --run --full
 ```
 
 ### 🗂️ Organização de Projeto Antigo
 
 ```bash
 # Move projeto velho pro lixão
-python3 cleaning.py --trash ~/Projetos/projeto-antigo --tag OLD-PROJECTS
+python3 main.py --trash ~/Projetos/projeto-antigo --tag OLD-PROJECTS
 
 # Se precisar depois, restaura
-python3 cleaning.py --list-trash
-python3 cleaning.py --restore-trash "[OLD-PROJECTS]_projeto-antigo_20241103.tar.gz"
+python3 main.py --list-trash
+python3 main.py --restore-trash "[OLD-PROJECTS]_projeto-antigo_20241103.tar.gz"
 ```
 
 ### 🔍 Procurar Aquele Arquivo que Você Arquivou
 
 ```bash
 # Busca nos archives
-python3 cleaning.py --search "relatorio_importante" --in-archives
+python3 main.py --search "relatorio_importante" --in-archives
 
 # Restaura quando encontrar
-python3 cleaning.py --restore archive-20241020 --item relatorio_importante.html
+python3 main.py --restore archive-20241020 --item relatorio_importante.html
 ```
 
 ---

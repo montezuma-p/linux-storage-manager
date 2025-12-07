@@ -7,7 +7,7 @@ Compacta e move arquivos/diretórios para o lixão permanente no storage.
 Usa nomenclatura com [TAGS] para fácil identificação e compressão máxima
 para economizar espaço.
 
-AUTOR: Sistema de Limpeza Inteligente  
+AUTOR: Pedro Montezuma
 DATA: 3 de novembro de 2025
 """
 
@@ -18,7 +18,7 @@ import tarfile
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
-from .storage_manager import StorageManager
+from modules.storage_manager import StorageManager
 
 
 class TrashManager:

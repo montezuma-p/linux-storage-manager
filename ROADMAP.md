@@ -12,12 +12,43 @@
 
 ## 🎯 Situação Atual
 
-Atualmente o projeto está **funcional e sendo usado em produção pessoal**, mas com algumas características que precisam ser melhoradas para torná-lo público e mais acessível:
+Atualmente o projeto está **funcional, refatorado e sendo usado em produção pessoal**, com arquitetura modular implementada em Dezembro de 2025:
 
 - ✅ Sistema funciona perfeitamente no ambiente atual
+- ✅ **Refatoração modular concluída** (Dez/2025): 
+  - `cleaning.py` (845 linhas) → `main.py` (415 linhas) + `modules/cleaner.py` (536 linhas)
+  - Package `utils/` criado para funções reutilizáveis
+  - Imports absolutos em todos os módulos
+  - Redução de 52% no arquivo principal
+- ✅ **Flag --python-only** para limpeza focada em cache Python
+- ✅ **Sistema de proteção** para diretórios críticos (`.config`, `.var`, `.vscode`, etc.)
 - ⚠️ Caminhos hardcoded no código (específicos do meu setup)
 - ⚠️ Configuração requer edição direta dos arquivos `.py`
 - ⚠️ Instalação manual necessária
+
+---
+
+## ✅ Melhorias Implementadas (Dezembro 2025)
+
+### Refatoração Modular
+- **Problema:** Arquivo monolítico de 845 linhas difícil de manter
+- **Solução:** Separação em módulos especializados
+- **Resultado:** 52% de redução no arquivo principal, código mais organizado
+
+### Proteção de Diretórios Críticos
+- **Problema:** `--full` mode estava deletando arquivos de `.config/` e `.var/`
+- **Solução:** Lista de `protected_dirs` com verificação em todos os scanners
+- **Resultado:** Zero risco de perda de configurações críticas
+
+### Modo Python-Only
+- **Problema:** Desenvolvedores Python precisavam limpar apenas cache Python
+- **Solução:** Flag `--python-only` com scanner especializado
+- **Resultado:** Limpeza rápida e segura para projetos Python ativos
+
+### Imports Absolutos
+- **Problema:** Imports relativos dificultavam navegação e IDE support
+- **Solução:** Migração para `from modules.xxx` em todos os 8 arquivos
+- **Resultado:** Melhor IntelliSense e clareza na estrutura
 
 ---
 

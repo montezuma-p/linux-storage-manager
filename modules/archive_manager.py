@@ -7,7 +7,7 @@ Move arquivos antigos do sistema principal para /mnt/storage/archives
 (disco exclusivo para esses arquivos) seguindo políticas de retenção definidas. 
 Mantém estrutura organizada e gera metadados completos de cada operação.
 
-AUTOR: Sistema de Limpeza Inteligente
+AUTOR: Pedro Montezuma 
 DATA: 3 de novembro de 2025
 """
 
@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Tuple
-from .storage_manager import StorageManager
+from modules.storage_manager import StorageManager
 
 
 class ArchiveManager:
